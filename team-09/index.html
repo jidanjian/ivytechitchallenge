@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ivy Tech Policy Assistant</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, "Segoe UI", system-ui, sans-serif;
+      font-size: 15px;
+      line-height: 1.5;
+      background: #f4f6f9;
+      color: #333;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* ── Header ── */
+    #header {
+      background: #005EB8;
+      color: #fff;
+      padding: 14px 20px;
+      flex-shrink: 0;
+    }
+    #header h1 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      letter-spacing: 0.01em;
+    }
+    #header p {
+      font-size: 0.8rem;
+      opacity: 0.85;
+      margin-top: 2px;
+    }
+
+    /* ── KPI Banner ── */
+    #kpi-banner {
+      background: #fff;
+      border-bottom: 1px solid #dde2ea;
+      display: flex;
+      gap: 32px;
+      padding: 8px 20px;
+      font-size: 0.82rem;
+      color: #555;
+      flex-shrink: 0;
+    }
+    #kpi-banner span strong {
+      color: #005EB8;
+    }
+
+    /* ── Chat thread ── */
+    #chat-thread {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px 16px 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    /* ── Message bubbles ── */
+    .bubble-row {
+      display: flex;
+      align-items: flex-end;
+      gap: 8px;
+    }
+    .bubble-row.user  { justify-content: flex-end; }
+    .bubble-row.assistant { justify-content: flex-start; }
+
+    @keyframes fadeSlideIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .bubble {
+      max-width: 72%;
+      padding: 10px 14px;
+      border-radius: 16px;
+      font-size: 0.92rem;
+      line-height: 1.55;
+      word-break: break-word;
+      animation: fadeSlideIn 250ms ease-out both;
+    }
+    .bubble-row.user .bubble {
+      background: #005EB8;
+      color: #fff;
+      border-bottom-right-radius: 4px;
+    }
+    .bubble-row.assistant .bubble {
+      background: #f0f0f0;
+      color: #222;
+      border-bottom-left-radius: 4px;
+    }
+
+    .bubble-label {
+      font-size: 0.72rem;
+      color: #888;
+      margin-bottom: 3px;
+    }
+    .bubble-row.user  .bubble-label { text-align: right; }
+    .bubble-row.assistant .bubble-label { text-align: left; }
+
+    .bubble-wrapper {
+      display: flex;
+      flex-direction: column;
+      max-width: 72%;
+    }
+    .bubble-row.user  .bubble-wrapper { align-items: flex-end; }
+    .bubble-row.assistant .bubble-wrapper { align-items: flex-start; }
+
+    /* ── Chip bar ── */
+    #chip-bar {
+      padding: 8px 16px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      flex-shrink: 0;
+      min-height: 0;
+    }
+    .chip {
+      background: #fff;
+      color: #005EB8;
+      border: 1.5px solid #005EB8;
+      border-radius: 999px;
+      padding: 5px 14px;
+      font-size: 0.82rem;
+      font-family: inherit;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+      white-space: nowrap;
+    }
+    .chip:hover {
+      background: #005EB8;
+      color: #fff;
+    }
+    .chip:active {
+      background: #004a94;
+      color: #fff;
+      border-color: #004a94;
+    }
+
+    /* ── Input bar ── */
+    #input-bar {
+      background: #fff;
+      border-top: 1px solid #dde2ea;
+      padding: 12px 16px;
+      display: flex;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+    #user-input {
+      flex: 1;
+      border: 1px solid #c5cdd8;
+      border-radius: 8px;
+      padding: 9px 14px;
+      font-size: 0.95rem;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    #user-input:focus { border-color: #005EB8; }
+
+    #ask-btn {
+      background: #005EB8;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 9px 22px;
+      font-size: 0.95rem;
+      font-family: inherit;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    #ask-btn:hover  { background: #004a94; }
+    #ask-btn:active { background: #003d7a; }
+  </style>
+</head>
+<body>
+
+  <div id="header">
+    <h1>Ivy Tech Policy Assistant</h1>
+    <p>Ask a policy question in plain language</p>
+  </div>
+
+  <div id="kpi-banner">
+    <span>Questions answered: <strong id="kpi-questions">0</strong></span>
+    <span>Est. time saved: <strong id="kpi-minutes">0</strong> min</span>
+  </div>
+
+  <div id="chat-thread"></div>
+
+  <div id="chip-bar"></div>
+
+  <div id="input-bar">
+    <input id="user-input" type="text" placeholder="Ask about a policy, procedure, or form…" autocomplete="off" />
+    <button id="ask-btn">Ask</button>
+  </div>
+
+  <script src="data/case_data.js"></script>
+  <script>
+    // ── Bubble renderer ──────────────────────────────────────────────
+    function appendBubble(role, text) {
+      const thread = document.getElementById('chat-thread');
+
+      const row = document.createElement('div');
+      row.className = 'bubble-row ' + role;
+
+      const wrapper = document.createElement('div');
+      wrapper.className = 'bubble-wrapper';
+
+      const label = document.createElement('div');
+      label.className = 'bubble-label';
+      label.textContent = role === 'user' ? 'You' : 'Assistant';
+
+      const bubble = document.createElement('div');
+      bubble.className = 'bubble';
+      bubble.textContent = text;
+
+      wrapper.appendChild(label);
+      wrapper.appendChild(bubble);
+      row.appendChild(wrapper);
+      thread.appendChild(row);
+      thread.scrollTop = thread.scrollHeight;
+    }
+
+    // ── Welcome message ──────────────────────────────────────────────
+    var WELCOME_TEXT =
+      'Hi! I can help you find answers about Ivy Tech policies, procedures, and forms — ' +
+      'things like grade release rules, late registration steps, refund exceptions, ' +
+      'emergency grants, and accommodation procedures. Type a question below to get started.';
+
+    appendBubble('assistant', WELCOME_TEXT);
+
+    // ── Query engine ─────────────────────────────────────────────────
+
+    /**
+     * Normalise a raw question string into an array of lowercase tokens
+     * with all punctuation stripped.
+     */
+    function tokenise(question) {
+      return question
+        .toLowerCase()
+        .replace(/[^a-z0-9\s]/g, ' ')
+        .split(/\s+/)
+        .filter(Boolean);
+    }
+
+    /**
+     * Intent map — each entry defines a policy ID and the keyword set that
+     * signals it.  Listed in priority order; highest score wins.
+     */
+    var INTENT_MAP = [
+      {
+        policyId: 'POL-101',
+        keywords: ['privacy','record','records','release','grades','grade','parent',
+                   'ferpa','consent','directory','information','confidential',
+                   'student','identity']
+      },
+      {
+        policyId: 'POL-205',
+        keywords: ['refund','withdrawal','withdraw','drop','money','back','exception',
+                   'medical','military','bursar','cost','fee','reimburse','reimbursement']
+      },
+      {
+        policyId: 'POL-310',
+        keywords: ['late','registration','register','add','class','add class',
+                   'enroll','enrolment','enrollment','late registration']
+      },
+      {
+        policyId: 'POL-412',
+        keywords: ['accommodation','accommodations','disability','dss','accessible',
+                   'accessibility','impairment','support','diagnosis','letter']
+      },
+      {
+        policyId: 'POL-520',
+        keywords: ['emergency','grant','grants','financial','help','unexpected',
+                   'expense','money','fund','funds','need','hardship','application']
+      },
+      {
+        policyId: 'POL-601',
+        keywords: ['front desk','response','response time','phone','email','walk','walk-in','walkin',
+                   'service','standard','standards','ring','rings','business day',
+                   'queue','wait','escalate','supervisor','time','times','rules']
+      }
+    ];
+
+    /**
+     * Supplementary keyword sets that favour procedure or form results when
+     * the user is not asking about a specific policy but about how-to or forms.
+     */
+    var PROCEDURE_KEYWORDS = ['procedure','steps','how','process','what do i do',
+                              'how do i','what are the steps','walk me through'];
+    var FORM_KEYWORDS      = ['form','which form','what form','need form','paperwork',
+                              'document','documents'];
+
+    /**
+     * Score a single intent against a token array.
+     * Returns the number of keyword hits (each unique keyword counts once).
+     */
+    function scoreIntent(intent, tokens) {
+      var score = 0;
+      var tokenSet = new Set(tokens);
+      intent.keywords.forEach(function (kw) {
+        // multi-word keywords: check if the original joined string contains them
+        if (kw.indexOf(' ') !== -1) {
+          if (tokens.join(' ').indexOf(kw) !== -1) score++;
+        } else if (tokenSet.has(kw)) {
+          score++;
+        }
+      });
+      return score;
+    }
+
+    /**
+     * Given a policy_id, return the most-recent policy record(s).
+     * POL-310 has two records — always prefer the 2026-08-15 one.
+     * Returns an array: for most policies, one section; can be two for campus
+     * specific policies when Indianapolis is in tokens.
+     */
+    function pickPolicyRecords(policyId, tokens) {
+      var allRecords = window.CASE_DATA.policies.filter(function (p) {
+        return p.policy_id === policyId;
+      });
+
+      // Sort descending by effective_date so [0] is always the most recent.
+      allRecords.sort(function (a, b) {
+        return b.effective_date.localeCompare(a.effective_date);
+      });
+
+      // De-duplicate: keep only the most-recent record per section.
+      var seen = {};
+      var deduped = [];
+      allRecords.forEach(function (p) {
+        if (!seen[p.section]) {
+          seen[p.section] = true;
+          deduped.push(p);
+        }
+      });
+
+      // Campus-specific handling (POL-520 s5.3 Indianapolis pilot).
+      var hasIndianapolis = tokens.indexOf('indianapolis') !== -1;
+      var campusRecord = deduped.find(function (p) {
+        return p.applies_to_campus !== 'All campuses';
+      });
+
+      if (campusRecord && hasIndianapolis) {
+        // Return the general section(s) first, then the campus-specific one.
+        var general = deduped.filter(function (p) {
+          return p.applies_to_campus === 'All campuses';
+        });
+        return general.concat([campusRecord]);
+      }
+
+      // Otherwise return only the general sections.
+      return deduped.filter(function (p) {
+        return p.applies_to_campus === 'All campuses';
+      });
+    }
+
+    /**
+     * Find the linked procedure for a policy (if any).
+     */
+    function findProcedure(policyId) {
+      return window.CASE_DATA.procedures.find(function (pr) {
+        return pr.policy_id === policyId;
+      }) || null;
+    }
+
+    /**
+     * Find a form record by ID.
+     */
+    function findForm(formId) {
+      return window.CASE_DATA.forms.find(function (f) {
+        return f.form_id === formId;
+      }) || null;
+    }
+
+    /**
+     * Format a plain-language answer from matched records.
+     */
+    function formatAnswer(policyId, tokens, wantProcedure, wantForm) {
+      var records = pickPolicyRecords(policyId, tokens);
+      if (!records.length) return null;
+
+      var proc = findProcedure(policyId);
+      var relatedProcedureId = proc ? proc.procedure_id : null;
+
+      // Determine the primary form from the procedure, then from policy text.
+      var primaryFormId = null;
+      if (proc && proc.form && proc.form !== 'None') {
+        primaryFormId = proc.form;
+      }
+
+      // POL-205 exception override: if the question is about medical/military/exception,
+      // the relevant form is F-330 (Refund Exception Request), not F-210.
+      if (policyId === 'POL-205') {
+        var exceptionTokens = ['medical', 'military', 'exception', 'exceptions'];
+        var isException = exceptionTokens.some(function (t) { return tokens.indexOf(t) !== -1; });
+        if (isException) {
+          primaryFormId = 'F-330';
+        }
+      }
+
+      var parts = [];
+
+      // ── Policy answer ──
+      if (!wantForm) {
+        records.forEach(function (rec) {
+          var campusTag = rec.applies_to_campus !== 'All campuses'
+            ? ' (' + rec.applies_to_campus + ' campus only)'
+            : '';
+          parts.push(
+            rec.title + ' — ' + rec.section_title + campusTag + '\n' +
+            rec.text + '\n' +
+            '(Policy ' + rec.policy_id + ', effective ' + rec.effective_date + ')'
+          );
+        });
+      }
+
+      // ── Procedure answer (if the user asked how-to) ──
+      if (wantProcedure && proc) {
+        var stepList = proc.steps.split('|').map(function (s, i) {
+          return (i + 1) + '. ' + s.trim();
+        }).join('\n');
+        parts.push('Steps — ' + proc.title + ':\n' + stepList);
+      }
+
+      // ── Form answer ──
+      if (wantForm && primaryFormId) {
+        var formRec = findForm(primaryFormId);
+        if (formRec) {
+          parts.push(
+            'Form needed: ' + formRec.form_name + ' (' + formRec.form_id + ')\n' +
+            'Purpose: ' + formRec.purpose + '\n' +
+            'Where to find it: ' + formRec.where_to_find
+          );
+        }
+      } else if (primaryFormId && !wantProcedure) {
+        // Append a form hint at the end of a policy answer.
+        var formRec2 = findForm(primaryFormId);
+        if (formRec2) {
+          parts.push('Related form: ' + formRec2.form_name + ' (' + formRec2.form_id + ') — ' + formRec2.where_to_find);
+        }
+      }
+
+      return {
+        answer: parts.join('\n\n'),
+        relatedProcedure: relatedProcedureId,
+        relatedForm: primaryFormId,
+        policyId: policyId
+      };
+    }
+
+    // ── Conversation context ──────────────────────────────────────────
+    /**
+     * In-memory context from the last successful answer.
+     * Cleared by "start over / clear / reset".
+     */
+    var conversationContext = {
+      lastPolicyId:    null,
+      lastProcedureId: null,
+      lastFormId:      null
+    };
+
+    /**
+     * Follow-up phrases: short questions that signal the user is continuing
+     * on the same topic rather than starting a new one.
+     */
+    var FOLLOWUP_PHRASES = [
+      'what form', 'which form', 'steps', 'how do i', 'exception',
+      'what about', 'and', 'what if', 'can i', 'tell me more',
+      'more about', 'is there', 'are there', 'what are'
+    ];
+
+    /** Threshold below which a score is considered "weak" and context boosting applies. */
+    var WEAK_SCORE_THRESHOLD = 2;
+
+    /** Score bonus applied to the context policy when the question is a follow-up. */
+    var CONTEXT_BOOST = 5;
+
+    /**
+     * Returns true when the question looks like a follow-up continuation
+     * (short, or starts with a follow-up phrase, or contains only follow-up vocabulary).
+     */
+    function isFollowUp(tokens, rawQuestion) {
+      if (tokens.length <= 3) return true;
+      var joined = rawQuestion.toLowerCase();
+      return FOLLOWUP_PHRASES.some(function (ph) {
+        return joined.indexOf(ph) !== -1;
+      });
+    }
+
+    /**
+     * Main query engine.
+     * @param {string} question  Raw question text from the user.
+     * @param {object} [ctx]     Current conversationContext (optional).
+     * Returns { answer, relatedProcedure, relatedForm, policyId } or null for fallback.
+     */
+    function queryEngine(question, ctx) {
+      var tokens = tokenise(question);
+      ctx = ctx || {};
+
+      var wantProcedure = PROCEDURE_KEYWORDS.some(function (kw) {
+        if (kw.indexOf(' ') !== -1) return tokens.join(' ').indexOf(kw) !== -1;
+        return tokens.indexOf(kw) !== -1;
+      });
+      var wantForm = FORM_KEYWORDS.some(function (kw) {
+        if (kw.indexOf(' ') !== -1) return tokens.join(' ').indexOf(kw) !== -1;
+        return tokens.indexOf(kw) !== -1;
+      });
+
+      // Score every intent with optional context boost.
+      var followUp = isFollowUp(tokens, question);
+      var best = null;
+      var bestScore = 0;
+
+      INTENT_MAP.forEach(function (intent) {
+        var s = scoreIntent(intent, tokens);
+
+        // Apply context boost when:
+        //  (a) the question looks like a follow-up AND
+        //  (b) this intent matches the last-answered policy AND
+        //  (c) the boost won't mask a clearly stronger new-intent match
+        //      (we apply it only when the raw score is weak).
+        if (
+          followUp &&
+          ctx.lastPolicyId &&
+          intent.policyId === ctx.lastPolicyId &&
+          s < WEAK_SCORE_THRESHOLD
+        ) {
+          s += CONTEXT_BOOST;
+        }
+
+        if (s > bestScore) {
+          bestScore = s;
+          best = intent;
+        }
+      });
+
+      if (!best || bestScore === 0) {
+        return null; // triggers fallback
+      }
+
+      return formatAnswer(best.policyId, tokens, wantProcedure, wantForm);
+    }
+
+    // ── KPI counters ─────────────────────────────────────────────────
+    function updateKPIs() {
+      var qEl = document.getElementById('kpi-questions');
+      var mEl = document.getElementById('kpi-minutes');
+      var q = parseInt(qEl.textContent, 10) + 1;
+      qEl.textContent = q;
+      mEl.textContent = q * 3;
+    }
+
+    // ── Starter chips ─────────────────────────────────────────────────
+    /**
+     * Renders 4 pre-defined starter question chips on page load (before any
+     * question has been asked).  Called once after the welcome message.
+     */
+    function renderStarterChips() {
+      var bar = document.getElementById('chip-bar');
+      bar.innerHTML = '';
+      var starters = [
+        'Can I release grades to a parent?',
+        'How do I process a late registration?',
+        'What is the emergency grant limit?',
+        'What are the front desk response time rules?'
+      ];
+      starters.forEach(function (label) {
+        var btn = document.createElement('button');
+        btn.className = 'chip';
+        btn.textContent = label;
+        btn.addEventListener('click', function () {
+          handleAsk(label);
+        });
+        bar.appendChild(btn);
+      });
+    }
+
+    // ── Chip renderer ────────────────────────────────────────────────
+    /**
+     * Renders quick-action chips below the chat thread after each answer.
+     * Pass the result object from queryEngine, or null for fallback.
+     * Chips are cleared before each render so stale ones never accumulate.
+     */
+    function renderChips(result) {
+      var bar = document.getElementById('chip-bar');
+      bar.innerHTML = '';
+
+      var chips = [];
+
+      if (result) {
+        if (result.relatedProcedure) {
+          chips.push({ label: 'Show me the steps',   query: 'Show me the steps' });
+        }
+        if (result.relatedForm) {
+          chips.push({ label: 'What form do I need?', query: 'What form do I need?' });
+        }
+      }
+
+      // "Start over" is always present after any answer.
+      chips.push({ label: 'Start over', query: 'Start over' });
+
+      chips.forEach(function (chip) {
+        var btn = document.createElement('button');
+        btn.className = 'chip';
+        btn.textContent = chip.label;
+        btn.addEventListener('click', function () {
+          handleAsk(chip.query);
+        });
+        bar.appendChild(btn);
+      });
+    }
+
+    // ── Fallback message ──────────────────────────────────────────────
+    var FALLBACK =
+      "I didn't find a match for that. Try asking about: refunds and withdrawals, " +
+      "late registration, accessibility accommodations, emergency grants, " +
+      "student records privacy, or front desk service standards.";
+
+    // ── Ask handler ──────────────────────────────────────────────────
+    function handleAsk(overrideText) {
+      const input = document.getElementById('user-input');
+      const text = (overrideText !== undefined ? overrideText : input.value).trim();
+      if (!text) return;
+      input.value = '';
+
+      // ── "Start over" handler ──────────────────────────────────────
+      var normalised = text.toLowerCase().replace(/[^a-z]/g, '');
+      if (normalised === 'startover' || normalised === 'clear' || normalised === 'reset') {
+        // Reset context.
+        conversationContext.lastPolicyId    = null;
+        conversationContext.lastProcedureId = null;
+        conversationContext.lastFormId      = null;
+
+        // Clear thread, re-show welcome and starter chips.
+        var thread = document.getElementById('chat-thread');
+        thread.innerHTML = '';
+        appendBubble('assistant', WELCOME_TEXT);
+        renderStarterChips();
+        return;
+      }
+
+      appendBubble('user', text);
+
+      var result = queryEngine(text, conversationContext);
+      if (result && result.answer) {
+        appendBubble('assistant', result.answer);
+
+        // Update context from this answer.
+        conversationContext.lastPolicyId    = result.policyId    || null;
+        conversationContext.lastProcedureId = result.relatedProcedure || null;
+        conversationContext.lastFormId      = result.relatedForm  || null;
+
+        renderChips(result);
+      } else {
+        appendBubble('assistant', FALLBACK);
+        // A failed lookup resets topic context so we don't stay stuck.
+        conversationContext.lastPolicyId    = null;
+        conversationContext.lastProcedureId = null;
+        conversationContext.lastFormId      = null;
+
+        renderChips(null);
+      }
+      updateKPIs();
+    }
+
+    document.getElementById('ask-btn').addEventListener('click', handleAsk);
+
+    document.getElementById('user-input').addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') handleAsk();
+    });
+
+    // Show starter chips after all functions are defined.
+    renderStarterChips();
+  </script>
+
+  <footer style="text-align:center;padding:10px 16px;font-size:0.78rem;color:#888;border-top:1px solid #dde2ea;flex-shrink:0;">
+    Prototype — Ivy Tech IT Challenge · Team 09
+  </footer>
+
+</body>
+</html>

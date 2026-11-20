@@ -20,7 +20,7 @@ Build a single-file, browser-only policy assistant that lets Ivy Tech staff ask 
 
 ### Sub-Task 1 — Project scaffold and data wiring
 
-**Status:** `[ ] pending`
+**Status:** `[x] done`
 
 **Intent**
 Create the single HTML file at `team-09/index.html` with the correct structure, load `case_data.js`, and verify the data is accessible before any UI or logic is written.
@@ -44,7 +44,7 @@ Create the single HTML file at `team-09/index.html` with the correct structure, 
 
 ### Sub-Task 2 — Chat UI shell
 
-**Status:** `[ ] pending`
+**Status:** `[x] done`
 
 **Intent**
 Build the visual shell of the chat interface: a conversation thread area, a text input with a submit button, and a KPI banner. No logic yet — just the layout and styling so the demo looks polished from the first interaction.
@@ -74,7 +74,7 @@ Build the visual shell of the chat interface: a conversation thread area, a text
 
 ### Sub-Task 3 — In-browser query engine
 
-**Status:** `[ ] pending`
+**Status:** `[x] done`
 
 **Intent**
 Build the core JavaScript query engine that takes a natural-language question string and returns a plain-language answer by matching against `window.CASE_DATA`. This is the intelligence of the tool.
@@ -108,7 +108,7 @@ Build the core JavaScript query engine that takes a natural-language question st
 
 ### Sub-Task 4 — Follow-up context and conversation memory
 
-**Status:** `[ ] pending`
+**Status:** `[x] done`
 
 **Intent**
 Make follow-up questions work naturally by remembering the topic of the last answer. A staff member who just asked about refunds should be able to ask "what's the exception?" without repeating the full context.
@@ -135,7 +135,7 @@ Make follow-up questions work naturally by remembering the topic of the last ans
 
 ### Sub-Task 5 — Quick-action chips
 
-**Status:** `[ ] pending`
+**Status:** `[x] done`
 
 **Intent**
 After each assistant answer, surface 2–3 contextual quick-action buttons ("chips") so staff can get the next piece of information with one click instead of typing. This directly reduces the time cost of multi-step lookups and reinforces the KPI story for evaluators.
@@ -162,7 +162,7 @@ After each assistant answer, surface 2–3 contextual quick-action buttons ("chi
 
 ### Sub-Task 6 — Demo polish and KPI narrative
 
-**Status:** `[ ] pending`
+**Status:** `[x] done`
 
 **Intent**
 Finalize the page for a live demo: smooth animations, a clear Ivy Tech header, the KPI banner wired to real counts, and a set of suggested starter questions visible on load so a judge or evaluator can immediately see the range of the tool without needing to know what to type.
