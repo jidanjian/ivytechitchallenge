@@ -20,7 +20,16 @@ Staff currently pause mid-conversation to hunt through printed handbooks or shar
 
 ## What This Tool Does Differently
 
-The Policy Assistant covers all 6 operational policies in the prototype dataset — covering refunds, records privacy, late registration, accommodations, emergency grants, and service standards. A staff member types a plain-language question and gets the relevant policy text, procedure steps, and the correct form in under 10 seconds, without leaving the conversation or opening a second tab.
+The Policy Assistant covers all 6 operational policies in the prototype dataset — covering refunds, records privacy, late registration, accommodations, emergency grants, and service standards. A staff member selects their role on first use, then types a plain-language question and gets only the policy text, procedure steps, and forms relevant to their position — in under 10 seconds, without leaving the conversation or opening a second tab.
+
+**Role-based responses** ensure each staff member sees only what applies to them:
+
+| Role | Policies surfaced |
+|---|---|
+| Front Desk | Records privacy, refund schedule (view only), accommodations, service standards |
+| Advisor | Records privacy, refunds, late registration, accommodations, emergency grants |
+| Bursar Specialist | Records privacy, full refund policy incl. exceptions, accommodations |
+| Financial Aid Counselor | Records privacy, emergency grants (incl. Indianapolis pilot), accommodations |
 
 ---
 
@@ -41,7 +50,7 @@ The Policy Assistant covers all 6 operational policies in the prototype dataset 
 | **2027 — Pilot** | Deploy at 2–3 campuses via GitHub Pages or intranet; collect usage and accuracy data |
 | **2028 — Full data** | Migrate from the 6-policy prototype to the complete Ivy Tech policy library |
 | **2029 — LLM upgrade** | Replace keyword engine with IBM watsonx for broader natural-language coverage; complete IT security and PII review |
-| **2030 — Statewide** | Embed in staff intranet with role-based policy filtering tied to HR system |
+| **2030 — Statewide** | Embed in staff intranet; role selection tied to HR system so the correct role loads automatically on login |
 
 ---
 

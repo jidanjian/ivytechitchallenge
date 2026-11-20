@@ -38,6 +38,7 @@ The tool covers the full set of sample institutional policies:
 - **Follow-up memory** — remembers the topic of the last answer so staff can ask "what's the exception?" or "what form do I need?" without repeating context.
 - **Quick-action chips** — one-click shortcuts for the most common next step after each answer (procedure steps, required form, start over).
 - **Linked procedures & forms** — every policy answer surfaces the related step-by-step procedure and the correct form with its location.
+- **Role-based filtering** — staff select their role (Front Desk, Advisor, Bursar Specialist, Financial Aid Counselor) on first use. The tool shows only policies and starter questions relevant to that role, using the `applies_to_roles` field already present in the data.
 - **Campus-aware answers** — detects campus-specific rules (e.g. the Indianapolis emergency grant pilot) and surfaces both the general and campus-specific information.
 - **Live KPI banner** — tracks questions answered and estimated staff minutes saved during the session, making the productivity impact immediately visible.
 
@@ -74,17 +75,31 @@ The in-browser query engine uses **keyword intent scoring**:
 
 1. **Tokenise** — the user's question is lowercased, stripped of punctuation, and split into tokens.
 2. **Score intents** — each policy in the INTENT_MAP is scored by counting keyword hits in the token set. Multi-word phrases (e.g. "front desk") are matched against the joined token string.
-3. **Context boost** — if the question is short or contains follow-up phrases ("what about", "steps", "exception"), the last-answered policy gets a score boost (`+5`) so follow-up questions resolve without re-typing context. A strong new-intent score overrides the boost.
-4. **Campus detection** — if "Indianapolis" appears in the tokens and the winning policy has a campus-specific section, both the general and campus-specific records are returned.
-5. **Format answer** — the winning policy's sections are formatted into plain-language output including rule text, effective date, related procedure steps (on request), and form details.
+3. **Role filter** — after scoring, only policy sections where `applies_to_roles` matches the active role (or is "All staff") are returned. This prevents, e.g., a Front Desk user from seeing Bursar-only exception handling.
+4. **Context boost** — if the question is short or contains follow-up phrases ("what about", "steps", "exception"), the last-answered policy gets a score boost (`+5`) so follow-up questions resolve without re-typing context. A strong new-intent score overrides the boost.
+5. **Campus detection** — if "Indianapolis" appears in the tokens and the winning policy has a campus-specific section, both the general and campus-specific records are returned.
+6. **Format answer** — the winning policy's sections are formatted into plain-language output including rule text, effective date, related procedure steps (on request), and form details.
+
+### Role-Based Filtering
+
+Staff select their role from a full-screen picker on first load. The active role is stored in `currentRole` and controls:
+
+| Role | Sees |
+|---|---|
+| **Front Desk** | POL-101 (all), POL-205 refund schedule, POL-412, POL-601 |
+| **Advisor** | POL-101, POL-205, POL-310, POL-412, POL-520 |
+| **Bursar Specialist** | POL-101, POL-205 (all sections incl. exceptions), POL-412 |
+| **Financial Aid Counselor** | POL-101, POL-412, POL-520 |
+
+Each role also gets tailored starter chips and a role-specific welcome message. The role badge in the header is clickable to switch roles at any time.
 
 ### Follow-up Memory
 
-A `conversationContext` object tracks `lastPolicyId`, `lastProcedureId`, and `lastFormId` after every answer. It is passed to `queryEngine()` on every call and cleared on "Start over" or when the user asks about a clearly different topic.
+A `conversationContext` object tracks `lastPolicyId`, `lastProcedureId`, and `lastFormId` after every answer. It is passed to `queryEngine()` on every call and cleared when the user opens the role picker ("Start over").
 
 ### UI
 
-Built with vanilla HTML/CSS/JS — no frameworks. Ivy Tech brand blue `#005EB8`. Message bubbles animate in with a 250ms `fadeSlideIn` keyframe. The chip bar re-renders after every answer with contextually relevant one-click shortcuts.
+Built with vanilla HTML/CSS/JS — no frameworks. Ivy Tech brand blue `#005EB8`. Message bubbles animate in with a 220ms `fadeSlideIn` keyframe. The chip bar re-renders after every answer with contextually relevant one-click shortcuts. A full-screen role picker on load personalises the session before the chat begins.
 
 ---
 
@@ -113,9 +128,10 @@ IBM Bob was used throughout the full development lifecycle of this prototype:
 | **Discover & Define** | Bob turned the user story ("As an Ivy Tech employee, I can get quick answers about policies so I spend more time with students") into a structured build plan with 6 ordered sub-tasks, expected outcomes, and relevant code pointers. |
 | **Architecture design** | Bob proposed the single-file, zero-dependency architecture — the right choice for a demo that needs to run offline on any device without setup. |
 | **Query engine** | Bob designed and implemented the keyword intent scoring system, the follow-up context boost, the campus-specific detection logic, and the POL-310 effective-date deduplication — all grounded in the actual `case_data.js` schema. |
-| **UI/UX** | Bob built the full chat interface including the KPI banner, animated message bubbles, chip bar, and start-over flow from a single set of requirements. |
+| **Role-based filtering** | Bob designed and implemented the full role picker UI, `ROLE_CONFIG` data structure, `roleMatches()` filter, role-aware starter chips, role-specific welcome messages, and the header role badge — using the `applies_to_roles` field already present in the dataset. |
+| **UI/UX** | Bob built the full chat interface including the KPI banner, animated message bubbles, chip bar, role picker overlay, and start-over flow from a single set of requirements. |
 | **Iteration** | Bob identified and fixed keyword gaps in the INTENT_MAP during the demo scenario trace (e.g. the medical refund exception F-330 override, the front desk "time/rules" keywords). |
-| **Documentation** | Bob generated this README, the UML component diagram, and the 2030 Impact Statement from the completed codebase and challenge brief. |
+| **Documentation** | Bob generated this README, the UML component diagram, and the Impact Statement from the completed codebase and challenge brief, and updated all documentation when role-based filtering was added. |
 
 ---
 

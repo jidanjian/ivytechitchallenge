@@ -246,9 +246,130 @@
     }
     #ask-btn:hover  { background: #004a94; box-shadow: 0 3px 10px rgba(0,94,184,0.35); }
     #ask-btn:active { background: #003d7a; box-shadow: none; }
+
+    /* ── Role picker overlay ── */
+    #role-picker {
+      position: fixed;
+      inset: 0;
+      background: #eef1f6;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 28px;
+      z-index: 100;
+      padding: 24px;
+    }
+    #role-picker h2 {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: #1f2328;
+      text-align: center;
+    }
+    #role-picker p {
+      font-size: 0.9rem;
+      color: #57606a;
+      text-align: center;
+      max-width: 360px;
+      margin-top: -16px;
+    }
+    #role-picker-logo {
+      width: 56px;
+      height: 56px;
+      background: linear-gradient(135deg, #005EB8 0%, #0071e3 100%);
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.8rem;
+    }
+    #role-buttons {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      width: 100%;
+      max-width: 420px;
+    }
+    .role-btn {
+      background: #fff;
+      border: 1.5px solid #d0d7de;
+      border-radius: 12px;
+      padding: 16px 14px;
+      font-size: 0.88rem;
+      font-family: inherit;
+      font-weight: 600;
+      color: #1f2328;
+      cursor: pointer;
+      transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      text-align: center;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+    }
+    .role-btn span.role-icon {
+      font-size: 1.5rem;
+    }
+    .role-btn:hover {
+      border-color: #005EB8;
+      box-shadow: 0 0 0 3px rgba(0,94,184,0.12);
+      background: #f0f7ff;
+    }
+    .role-btn:active {
+      background: #e0efff;
+    }
+
+    /* ── Role badge in header ── */
+    #role-badge {
+      margin-left: auto;
+      background: rgba(255,255,255,0.18);
+      border: 1px solid rgba(255,255,255,0.35);
+      border-radius: 999px;
+      padding: 3px 12px 3px 8px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      transition: background 0.15s;
+      white-space: nowrap;
+    }
+    #role-badge:hover { background: rgba(255,255,255,0.28); }
+    #role-badge::before {
+      content: '';
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #86efac;
+      flex-shrink: 0;
+    }
   </style>
 </head>
 <body>
+
+  <!-- ── Role picker overlay (shown before chat) ── -->
+  <div id="role-picker">
+    <div id="role-picker-logo">📋</div>
+    <h2>Ivy Tech Policy Assistant</h2>
+    <p>Select your role to see policies and guidance relevant to your position.</p>
+    <div id="role-buttons">
+      <button class="role-btn" data-role="Front desk">
+        <span class="role-icon">🖥️</span>Front Desk
+      </button>
+      <button class="role-btn" data-role="Advisor">
+        <span class="role-icon">🎓</span>Advisor
+      </button>
+      <button class="role-btn" data-role="Bursar specialist">
+        <span class="role-icon">💳</span>Bursar Specialist
+      </button>
+      <button class="role-btn" data-role="Financial aid counselor">
+        <span class="role-icon">💰</span>Financial Aid Counselor
+      </button>
+    </div>
+  </div>
 
   <div id="header">
     <div id="header-logo">📋</div>
@@ -256,6 +377,7 @@
       <h1>Ivy Tech Policy Assistant</h1>
       <p>Ask a policy question in plain language</p>
     </div>
+    <div id="role-badge" title="Click to switch role"></div>
   </div>
 
   <div id="kpi-banner">
@@ -277,6 +399,117 @@
 
   <script src="data/case_data.js"></script>
   <script>
+    // ── Role selection ────────────────────────────────────────────────
+    /**
+     * The active role string — matches applies_to_roles values in case_data.js.
+     * Set when the user picks a role; null until then.
+     */
+    var currentRole = null;
+
+    /**
+     * Role metadata: display label, icon, welcome message, and starter chips.
+     */
+    var ROLE_CONFIG = {
+      'Front desk': {
+        label: 'Front Desk',
+        icon: '🖥️',
+        welcome: 'Hi! You\'re signed in as Front Desk staff. I can help you with student records privacy, refund schedules, accommodation referrals, and front desk service standards. Type a question or choose a topic below.',
+        starters: [
+          'What are the phone response time rules?',
+          'Can I release grades to a parent?',
+          'How do I verify a student\'s identity?',
+          'Walk-in check-in procedure'
+        ]
+      },
+      'Advisor': {
+        label: 'Advisor',
+        icon: '🎓',
+        welcome: 'Hi! You\'re signed in as an Advisor. I can help you with late registration approvals, emergency grant eligibility, accommodation referrals, refund rules, and student records. Type a question or choose a topic below.',
+        starters: [
+          'How do I process a late registration?',
+          'What is the emergency grant limit?',
+          'How do I refer a student for accommodations?',
+          'What are the refund deadlines?'
+        ]
+      },
+      'Bursar specialist': {
+        label: 'Bursar Specialist',
+        icon: '💳',
+        welcome: 'Hi! You\'re signed in as a Bursar Specialist. I can help you with refund schedules, medical and military refund exceptions, identity verification, and accommodation policy. Type a question or choose a topic below.',
+        starters: [
+          'What is the refund schedule?',
+          'How do I process a medical refund exception?',
+          'What form is needed for a refund exception?',
+          'Can I release financial details to a parent?'
+        ]
+      },
+      'Financial aid counselor': {
+        label: 'Financial Aid Counselor',
+        icon: '💰',
+        welcome: 'Hi! You\'re signed in as a Financial Aid Counselor. I can help you with emergency grant eligibility, the Indianapolis campus pilot, accommodation referrals, and student records privacy. Type a question or choose a topic below.',
+        starters: [
+          'What is the emergency grant limit?',
+          'Is there an Indianapolis emergency grant pilot?',
+          'What form is needed for an emergency grant?',
+          'Can I release financial details to a parent?'
+        ]
+      }
+    };
+
+    /**
+     * Returns true if a policy record applies to the current user role.
+     * Always returns true for 'All staff' records or when no role is set.
+     */
+    function roleMatches(record) {
+      if (!currentRole) return true;
+      if (record.applies_to_roles === 'All staff') return true;
+      return record.applies_to_roles
+        .split(',')
+        .map(function (r) { return r.trim().toLowerCase(); })
+        .indexOf(currentRole.toLowerCase()) !== -1;
+    }
+
+    /**
+     * Show the role picker overlay and hide the chat.
+     */
+    function showRolePicker() {
+      document.getElementById('role-picker').style.display = 'flex';
+    }
+
+    /**
+     * Hide the overlay, set the active role, and initialise the chat.
+     */
+    function selectRole(role) {
+      currentRole = role;
+      var cfg = ROLE_CONFIG[role];
+
+      // Hide picker, show app.
+      document.getElementById('role-picker').style.display = 'none';
+
+      // Update header badge.
+      var badge = document.getElementById('role-badge');
+      badge.textContent = cfg.icon + ' ' + cfg.label;
+
+      // Reset conversation.
+      conversationContext.lastPolicyId    = null;
+      conversationContext.lastProcedureId = null;
+      conversationContext.lastFormId      = null;
+      var thread = document.getElementById('chat-thread');
+      thread.innerHTML = '';
+      appendBubble('assistant', cfg.welcome);
+      renderStarterChips();
+    }
+
+    // Wire role buttons.
+    document.querySelectorAll('.role-btn').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        selectRole(btn.getAttribute('data-role'));
+      });
+    });
+
+    // Clicking the role badge in the header reopens the picker.
+    document.getElementById('role-badge').addEventListener('click', showRolePicker);
+
     // ── Bubble renderer ──────────────────────────────────────────────
     function appendBubble(role, text) {
       const thread = document.getElementById('chat-thread');
@@ -310,13 +543,11 @@
       thread.scrollTop = thread.scrollHeight;
     }
 
-    // ── Welcome message ──────────────────────────────────────────────
+    // ── Welcome message (generic fallback, role-specific text in ROLE_CONFIG) ──
     var WELCOME_TEXT =
       'Hi! I can help you find answers about Ivy Tech policies, procedures, and forms — ' +
       'things like grade release rules, late registration steps, refund exceptions, ' +
       'emergency grants, and accommodation procedures. Type a question below to get started.';
-
-    appendBubble('assistant', WELCOME_TEXT);
 
     // ── Query engine ─────────────────────────────────────────────────
 
@@ -438,9 +669,9 @@
         return general.concat([campusRecord]);
       }
 
-      // Otherwise return only the general sections.
+      // Otherwise return only the general sections, filtered by role.
       return deduped.filter(function (p) {
-        return p.applies_to_campus === 'All campuses';
+        return p.applies_to_campus === 'All campuses' && roleMatches(p);
       });
     }
 
@@ -648,12 +879,14 @@
     function renderStarterChips() {
       var bar = document.getElementById('chip-bar');
       bar.innerHTML = '';
-      var starters = [
-        'Can I release grades to a parent?',
-        'How do I process a late registration?',
-        'What is the emergency grant limit?',
-        'What are the front desk response time rules?'
-      ];
+      var starters = currentRole && ROLE_CONFIG[currentRole]
+        ? ROLE_CONFIG[currentRole].starters
+        : [
+            'Can I release grades to a parent?',
+            'How do I process a late registration?',
+            'What is the emergency grant limit?',
+            'What are the front desk response time rules?'
+          ];
       starters.forEach(function (label) {
         var btn = document.createElement('button');
         btn.className = 'chip';
@@ -716,16 +949,8 @@
       // ── "Start over" handler ──────────────────────────────────────
       var normalised = text.toLowerCase().replace(/[^a-z]/g, '');
       if (normalised === 'startover' || normalised === 'clear' || normalised === 'reset') {
-        // Reset context.
-        conversationContext.lastPolicyId    = null;
-        conversationContext.lastProcedureId = null;
-        conversationContext.lastFormId      = null;
-
-        // Clear thread, re-show welcome and starter chips.
-        var thread = document.getElementById('chat-thread');
-        thread.innerHTML = '';
-        appendBubble('assistant', WELCOME_TEXT);
-        renderStarterChips();
+        // Show role picker so user can switch role or start fresh.
+        showRolePicker();
         return;
       }
 
@@ -759,8 +984,7 @@
       if (e.key === 'Enter') handleAsk();
     });
 
-    // Show starter chips after all functions are defined.
-    renderStarterChips();
+    // Role picker is shown on load; chat initialises via selectRole().
   </script>
 
   <footer style="text-align:center;padding:10px 16px;font-size:0.78rem;color:#888;border-top:1px solid #dde2ea;flex-shrink:0;">
