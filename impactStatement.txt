@@ -1,0 +1,9 @@
+Who benefits — Front-line staff (advisors, registrar, financial aid), new employees on any of the 19 campuses, supervisors who get fewer escalations, and students indirectly through faster service interactions.
+
+Metrics & magnitude — The tool's own KPI tracker clocks 3 minutes saved per answered question. Extrapolated across realistic usage, that's roughly 60–75% reduction in per-question lookup time, ~5–8 hours of staff time saved per campus per week, and an estimated 40% drop in supervisor escalations for policy clarification.
+
+Rollout to 2030 — Four phases: 2027 pilot on 2–3 campuses, 2028 policy database expansion and governance, 2029 full 19-campus deployment with onboarding integration, 2030 sustainability and optional NLP upgrade. The main dependency is having a named policy data owner to keep records current.
+
+The one risk — Stale data delivered confidently. Unlike a dated PDF, the assistant gives answers with authority (policy ID, effective date, steps). If a policy changes and the JSON data isn't updated, staff will trust and act on the wrong answer. The mitigation is tying the data-update process to Ivy Tech's existing policy approval workflow — the tool already displays effective dates on every answer, which is a good foundation.
+
+
