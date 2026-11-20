@@ -1,4 +1,4 @@
-# 2030 Impact Statement
+# Impact Statement
 ## Ivy Tech Policy Assistant — Case 9: Employee Productivity Assistant
 **Team 09 · 2026 Ivy Tech IT Challenge**
 
@@ -6,61 +6,48 @@
 
 ## Who Benefits
 
-**Primary:** Ivy Tech student services staff — front-desk advisors, registrar specialists, bursar staff, financial aid counselors, and advising staff across all campuses.
+**Primary:** Front-desk staff, advisors, registrar and bursar specialists — anyone who fields student policy questions during the workday.
 
-**Indirect:** Every student those staff members serve. Faster, more confident answers mean shorter wait times, more time spent on the actual advising conversation, and fewer students sent away with the wrong information.
-
----
-
-## Which Metric Moves — and by How Much
-
-**Seed 2030 Metric:** Staff hours returned to student-facing work.
-
-| Current State | With Policy Assistant | Improvement |
-|---|---|---|
-| ~3–5 min per policy lookup | Under 10 seconds | ~95% reduction in lookup time |
-| Staff interrupt the conversation to search | Answer surfaced mid-conversation | Zero conversation breaks |
-| Inconsistent answers across staff/campuses | Consistent, policy-grounded answers | Reduced error and rework |
-
-**Conservative estimate at scale:**
-- Ivy Tech serves ~160,000 students across 19 campuses.
-- If student services staff handle even 10 policy questions per day per campus, that is ~190 questions per day statewide.
-- Saving 3 minutes per question = **~570 staff minutes (9.5 hours) returned to students per day** across the system.
-- Over a 200-day academic year: **~1,900 staff hours returned annually** — without adding a single staff member.
-
-**Secondary metric:** Student response time (POL-601 target: email response within 1 business day). Faster policy lookups reduce the time between a student's question and a staff member's confident reply.
+**Secondary:** Every student those staff serve. Faster, accurate answers mean shorter wait times and fewer students redirected for a follow-up.
 
 ---
 
-## What It Would Take to Roll This Out Statewide by 2030
+## The Problem Being Solved
 
-| Step | What is needed |
+Staff currently pause mid-conversation to hunt through printed handbooks or shared drives for policy answers. A single lookup takes 3–5 minutes and often produces inconsistent results across staff and campuses.
+
+---
+
+## What This Tool Does Differently
+
+The Policy Assistant covers all 6 operational policies in the prototype dataset — covering refunds, records privacy, late registration, accommodations, emergency grants, and service standards. A staff member types a plain-language question and gets the relevant policy text, procedure steps, and the correct form in under 10 seconds, without leaving the conversation or opening a second tab.
+
+---
+
+## Metric Impact
+
+**Seed 2030 target:** Staff hours returned to student-facing work.
+
+- Baseline: ~190 policy lookups per day across 19 campuses (10 per campus)
+- Time saved: 3 min × 190 = **~570 staff minutes returned per day**
+- Over a 200-day academic year: **~1,900 staff hours returned annually** — no new headcount required
+
+---
+
+## Path to 2030
+
+| Phase | Action |
 |---|---|
-| **Phase 1 — Pilot (2027)** | Deploy the current prototype at 2–3 campuses. Collect usage data: questions asked, response time, staff satisfaction. Requires: IT approval for GitHub Pages hosting or intranet deployment, faculty/staff onboarding session. |
-| **Phase 2 — Expand data (2028)** | Connect to the full Ivy Tech policy library (not just the 6 prototype policies). Requires: a structured policy data export from the existing policy management system, or a one-time data migration by a small team. |
-| **Phase 3 — LLM upgrade (2029)** | Replace keyword scoring with an IBM watsonx or similar on-premises LLM for broader natural-language coverage. Requires: IT security review, API key management, and a staff data privacy review to confirm no student PII is processed. |
-| **Phase 4 — Statewide (2030)** | Embed in the existing staff intranet or mobile app. Tie into the HR system for role-based policy filtering (e.g. front-desk staff see only relevant policies). Requires: standard IT procurement and change management. |
+| **2027 — Pilot** | Deploy at 2–3 campuses via GitHub Pages or intranet; collect usage and accuracy data |
+| **2028 — Full data** | Migrate from the 6-policy prototype to the complete Ivy Tech policy library |
+| **2029 — LLM upgrade** | Replace keyword engine with IBM watsonx for broader natural-language coverage; complete IT security and PII review |
+| **2030 — Statewide** | Embed in staff intranet with role-based policy filtering tied to HR system |
 
 ---
 
-## The One Risk We Would Watch
+## Key Risk
 
-**Policy drift.** The tool's answers are only as current as the data it reads. If a policy changes and `case_data.js` is not updated, staff will get outdated answers with apparent authority. 
-
-**Mitigation:** In Phase 1, assign one policy owner per department to maintain the data file. In Phase 2+, automate a sync from the policy management system. Every answer already cites the policy ID and effective date, so staff can spot-check currency.
-
----
-
-## The A-Ivy Alignment
-
-> *"AI supports people and does not replace them. Ground answers in approved sources, give users a path to a human, protect personal data, keep a person in charge of high-impact decisions, and design for accessibility."*
-
-This tool was designed from the first line of code with these principles:
-- **Grounded in approved sources** — every answer comes directly from official policy text, cited by ID and date.
-- **Path to a human** — answers surface the responsible office and procedure owner, not just the rule.
-- **No personal data** — zero student or employee information is collected, stored, or processed.
-- **Human in charge** — the tool informs; staff decide. No automated actions.
-- **Accessible by design** — plain-language answers, keyboard-navigable UI, no images required for comprehension.
+**Policy drift** — outdated data produces authoritative-sounding wrong answers. Mitigated by citing policy ID and effective date on every answer, and assigning a policy owner per department to maintain the data file.
 
 ---
 
