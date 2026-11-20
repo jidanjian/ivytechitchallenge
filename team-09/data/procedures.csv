@@ -1,0 +1,6 @@
+procedure_id,title,policy_id,steps,form
+PR-01,Process a course drop with refund,POL-205,Verify identity (POL-101 1.4) | Check the drop date against the refund schedule | Submit the drop in the student system | Note the refund amount in the student record,F-210
+PR-02,Approve late registration,POL-310,Confirm the class has started | Get instructor approval on form F-115 | Register the student | Email the student a confirmation,F-115
+PR-03,Refer a student for accommodations,POL-412,Listen without asking about a diagnosis | Share the DSS contact and hours | Offer to walk the student to DSS or book an appointment,None
+PR-04,Help a student apply for an emergency grant,POL-520,Confirm current enrollment | Share form F-520 | Check the campus for pilot limits | Send the form to the Dean of Students office,F-520
+PR-05,Release a record to a parent,POL-101,Verify the student's consent on form F-210 | Verify the parent's identity | Release only the items listed on the form,F-210
