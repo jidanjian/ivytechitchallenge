@@ -457,16 +457,31 @@
     };
 
     /**
+     * Maps the UI role strings (from ROLE_CONFIG) to the department/role
+     * labels used in the applies_to_roles field of policies.csv.
+     * One role can match multiple data labels.
+     */
+    var ROLE_ALIASES = {
+      'front desk':              ['front desk'],
+      'advisor':                 ['advising', 'advisor'],
+      'bursar specialist':       ['bursar'],
+      'financial aid counselor': ['financial aid']
+    };
+
+    /**
      * Returns true if a policy record applies to the current user role.
      * Always returns true for 'All staff' records or when no role is set.
      */
     function roleMatches(record) {
       if (!currentRole) return true;
       if (record.applies_to_roles === 'All staff') return true;
-      return record.applies_to_roles
+      var aliases = ROLE_ALIASES[currentRole.toLowerCase()] || [currentRole.toLowerCase()];
+      var recordRoles = record.applies_to_roles
         .split(',')
-        .map(function (r) { return r.trim().toLowerCase(); })
-        .indexOf(currentRole.toLowerCase()) !== -1;
+        .map(function (r) { return r.trim().toLowerCase(); });
+      return aliases.some(function (alias) {
+        return recordRoles.indexOf(alias) !== -1;
+      });
     }
 
     /**
@@ -576,8 +591,9 @@
       },
       {
         policyId: 'POL-205',
-        keywords: ['refund','withdrawal','withdraw','drop','money','back','exception',
-                   'medical','military','bursar','cost','fee','reimburse','reimbursement']
+        keywords: ['refund','refunds','withdrawal','withdraw','drop','deadline','deadlines',
+                   'money','back','exception','medical','military','bursar','cost','fee',
+                   'reimburse','reimbursement']
       },
       {
         policyId: 'POL-310',
